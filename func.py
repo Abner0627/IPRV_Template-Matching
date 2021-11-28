@@ -1,4 +1,3 @@
-# %%
 import numpy as np
 import cv2
 import os
@@ -7,13 +6,6 @@ from numpy.lib.stride_tricks import as_strided
 from itertools import product
 import time
 
-# %%
-tStart = time.time()
-
-# %% [markdown]
-# ## Func
-
-# %%
 def _pad(X, k):
     XX_shape = tuple(np.subtract(X.shape, k.shape) + (1, 1))
     if XX_shape!=X.shape:
@@ -127,107 +119,10 @@ def _NMS(boxes, overlapThresh):
 			np.where(overlap > overlapThresh)[0])))
 	# return only the bounding boxes that were picked using the
 	# integer data type
-	return boxes[pick].astype("int")    
-
-def _getBox(res, T_org, thrs):
-    M = np.where(res>thrs, 1, 0) 
-    box_i, box_j = np.where(M!=0)
-    h, w = T_org.shape
-    boxes = np.vstack([box_j - w//2, box_i - h//2,\
-                box_j + w//2, box_i + h//2]).T
-    box_res = _NMS(boxes, 0.4)
-    return box_res
-
-# %% [markdown]
-# ## path
-
-# %%
-path = '../img'
-img_list, tpl_list = _split(path, img_type='100')
-
-# %% [markdown]
-# ## img
-
-# %%
-img_org = cv2.imread(os.path.join(path, img_list[0]))
-tpl = cv2.imread(os.path.join(path, tpl_list[0]))
-
-fig = plt.figure()
-plt.imshow(img_org)
-
-fig = plt.figure()
-plt.imshow(tpl)
-
-# %% [markdown]
-# ## View
-
-# %%
-I_org = cv2.cvtColor(img_org, cv2.COLOR_BGR2GRAY)
-T_org = cv2.cvtColor(tpl, cv2.COLOR_BGR2GRAY)
+	return boxes[pick].astype("int")
 
 G = np.array([[1,  4,  6,  4, 1],
               [4, 16, 24, 16, 4],
               [6, 24, 36, 24, 6],
               [4, 16, 24, 16, 4],
               [1,  4,  6,  4, 1]])
-I = _DSP(I_org, G/16, iter=3)
-T = _DSP(T_org, G/16, iter=3)
-I_pad = _pad(I, T)
-
-sub_matrices = _sub(I_pad, T)
-CC = _match(sub_matrices, T)
-
-res = _USP(CC, G/4, iter=3)
-
-fig = plt.figure()
-plt.imshow(res)
-
-
-# %% [markdown]
-# ## Box_Cent
-
-# %%
-# Die 0.2
-# 100 0.13
-
-# M = np.where(res>0.13, 1, 0)
-
-# fig = plt.figure()
-# plt.imshow(M)
-
-# # %% [markdown]
-# # ## Boxes
-
-# # %%
-# box_i, box_j = np.where(M!=0)
-# h, w = T_org.shape
-# # y, x
-# boxes = np.vstack([box_j - w//2, box_i - h//2,\
-#                    box_j + w//2, box_i + h//2]).T
-
-
-# # %% [markdown]
-# # ## NMS
-
-# # %%
-# box_res = _NMS(boxes, 0.4)
-box_res = _getBox(res, T_org, 0.13)
-
-I_box_R = cv2.cvtColor(I_org, cv2.COLOR_GRAY2BGR)
-for i in range(len(box_res)):
-	x1, y1 = box_res[i, :2]
-	x2, y2 = box_res[i, 2:]
-	mid_x, mid_y = (x1 + x2) // 2, (y1 + y2) // 2
-	text_X = 'X: ' + str(mid_x)
-	text_Y = 'Y: ' + str(mid_y)
-	cv2.rectangle(I_box_R, (x1, y1), (x2, y2), (0, 0, 255), 1)
-	cv2.putText(I_box_R, text_X, (mid_x, mid_y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1, cv2.LINE_AA)
-	cv2.putText(I_box_R, text_Y, (mid_x, mid_y+45), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1, cv2.LINE_AA)
-
-fig = plt.figure()
-plt.imshow(cv2.cvtColor(I_box_R, cv2.COLOR_BGR2RGB))
-
-tEnd = time.time()
-print ("\n" + "It cost {:.4f} sec" .format(tEnd-tStart))
-
-
