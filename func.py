@@ -121,6 +121,28 @@ def _NMS(boxes, overlapThresh):
 	# integer data type
 	return boxes[pick].astype("int")
 
+def _getBox(res, T_org, thrs):
+    M = np.where(res>thrs, 1, 0) 
+    box_i, box_j = np.where(M!=0)
+    h, w = T_org.shape
+    boxes = np.vstack([box_j - w//2, box_i - h//2,\
+                box_j + w//2, box_i + h//2]).T
+    box_res = _NMS(boxes, 0.4)
+    return box_res
+
+def _plotBox(I_org, box_res):
+    I_box_R = cv2.cvtColor(I_org, cv2.COLOR_GRAY2BGR)
+    for i in range(len(box_res)):
+        x1, y1 = box_res[i, :2]
+        x2, y2 = box_res[i, 2:]
+        mid_x, mid_y = (x1 + x2) // 2, (y1 + y2) // 2
+        text_X = 'X: ' + str(mid_x)
+        text_Y = 'Y: ' + str(mid_y)
+        cv2.rectangle(I_box_R, (x1, y1), (x2, y2), (0, 0, 255), 1)
+        cv2.putText(I_box_R, text_X, (mid_x, mid_y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1, cv2.LINE_AA)
+        cv2.putText(I_box_R, text_Y, (mid_x, mid_y+45), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1, cv2.LINE_AA)
+    return I_box_R
+
 G = np.array([[1,  4,  6,  4, 1],
               [4, 16, 24, 16, 4],
               [6, 24, 36, 24, 6],
