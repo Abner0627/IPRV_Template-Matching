@@ -1,17 +1,34 @@
 import numpy as np
 import cv2
 import os
-import matplotlib.pyplot as plt
 from numpy.lib.stride_tricks import as_strided
 from itertools import product
-import time
+
+def _split(path, img_type):
+    tot_list = os.listdir(path)
+    # 取得path下所有檔案名稱
+    img_list, tpl_list = [], []
+    for j in tot_list:
+        k = j.replace('.', '-')
+        if k.split('-')[0]==img_type and k.split('-')[-2]!='MatchResult':
+            if k.split('-')[-2]=='Template':
+                tpl_list.append(j)
+                # 找出作為Template的影像
+            else:
+                img_list.append(j)
+                # 待偵測的影像
+    return img_list, tpl_list
 
 def _pad(X, k):
     XX_shape = tuple(np.subtract(X.shape, k.shape) + (1, 1))
+    # 計算使用k做conv.之後的影像大小
+    # H' = H - (Hk - 1)，此處H'需等於H
     if XX_shape!=X.shape:
         P = np.subtract(X.shape, XX_shape) // 2
+        # 計算需要pad多少像素
         MD = np.subtract(X.shape, XX_shape) % 2
         X_ = np.pad(X, ((P[0], P[0]+MD[0]), (P[1], P[1]+MD[1])), 'constant')
+        # 進行padding，當需要pad的像素數量為奇數時，則多pad 1個像素
     else:
         X_ = X
     return X_
@@ -19,38 +36,53 @@ def _pad(X, k):
 def _DSP(X, k, iter=1):
     for i in range(iter):
         k_ = k / (k.shape[0] * k.shape[1])
+        # 將kernel 正規化
         X_pad = _pad(X, k_)
+        # zero padding
         view_shape = tuple(np.subtract(X_pad.shape, k_.shape) + 1) + k_.shape
+        # 計算視野大小(H', W', Hk, Wk)
         strides = X_pad.strides + X_pad.strides
+        # 在W 方向時，元素間隔皆為4 byte (X_pad[i, 0] to X_pad[i, 1])；
+        # 在H 方向時，元素間隔皆為4*W byte (X_pad[0, j] to X_pad[1, j])。
+        # 由於前後兩個維度的計算方式一樣，故最終strides 為(4W, 4, 4W, 4)        
         sub_matrices = as_strided(X_pad, view_shape, strides) 
+        # 將X_pad 依kernel 大小分割並排成view_shape 大小的矩陣
         cv = np.einsum('klij,ij->kl', sub_matrices, k_)
+        # 矩陣內積 sub_matrices(S), k_(K), cv(C)
+        # (C)_{kl} = (S)_{klij} · (K)_{ij}        
         X = cv[::2, ::2]
+        # 刪除W與H方向的影像像素
     return X
 
 def _USP(DP, k, iter=1):
     for i in range(iter):
         DP_ = np.insert(DP, range(DP.shape[0]), 0, axis=0)
         X = np.insert(DP_, range(DP.shape[1]), 0, axis=1)
+        # 在W與H方向的奇數列pad 0
         k_ = k / (k.shape[0] * k.shape[1])
         X_pad = _pad(X, k_)
         view_shape = tuple(np.subtract(X_pad.shape, k_.shape) + 1) + k_.shape
         strides = X_pad.strides + X_pad.strides
         sub_matrices = as_strided(X_pad, view_shape, strides) 
         DP = np.einsum('klij,ij->kl', sub_matrices, k_)
+        # 以上六行同_DSP
     return DP
 
 def _nor(X, h, w):
     X_ = X - np.sum(X) / (h*w)
+    # CC的正規化運算
     return X_
 
 def _CC(X, Y):
     res = np.sum(X * Y) / np.sqrt(np.sum(X**2) * np.sum(Y**2))
+    # 計算Correlation Coefficient
     return res
 
 def _sub(I, T):
     view_shape = tuple(np.subtract(I.shape, T.shape) + 1) + T.shape
     strides = I.strides + I.strides
     sub_matrices = as_strided(I, view_shape, strides)
+    # 切割影像；以上三行同_DSP
     return sub_matrices
 
 def _match(sub_matrices, T):
@@ -58,22 +90,11 @@ def _match(sub_matrices, T):
     L = []
     T_ = _nor(T, h, w)
     for y, x in product(range(h_), range(w_)):
+    # 於迴圈內計算template與每個從影像切割出的小矩陣之CC
         S_ = _nor(sub_matrices[y, x, :, :], h, w)
         L.append(_CC(T_, S_))
     res = np.array(L).reshape(h_, w_)
     return res
-
-def _split(path, img_type='100'):
-    tot_list = os.listdir(path)
-    img_list, tpl_list = [], []
-    for j in tot_list:
-        k = j.replace('.', '-')
-        if k.split('-')[0]==img_type and k.split('-')[-2]!='MatchResult':
-            if k.split('-')[-2]=='Template':
-                tpl_list.append(j)
-            else:
-                img_list.append(j)
-    return img_list, tpl_list
 
 def _NMS(boxes, overlapThresh):
 	# if there are no boxes, return an empty list
