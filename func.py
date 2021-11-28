@@ -97,73 +97,71 @@ def _match(sub_matrices, T):
     return res
 
 def _NMS(boxes, overlapThresh):
-	# if there are no boxes, return an empty list
-	if len(boxes) == 0:
-		return []
-	# if the bounding boxes integers, convert them to floats --
-	# this is important since we'll be doing a bunch of divisions
-	if boxes.dtype.kind == "i":
-		boxes = boxes.astype("float")
-	# initialize the list of picked indexes	
+	boxes = boxes.astype("float")
+	# 確保boxes為float
 	pick = []
-	# grab the coordinates of the bounding boxes
-	x1 = boxes[:,0]
-	y1 = boxes[:,1]
-	x2 = boxes[:,2]
-	y2 = boxes[:,3]
-	# compute the area of the bounding boxes and sort the bounding
-	# boxes by the bottom-right y-coordinate of the bounding box
+	x1 = boxes[:,0]    # 左上x座標
+	y1 = boxes[:,1]    # 左上y座標
+	x2 = boxes[:,2]    # 右下x座標
+	y2 = boxes[:,3]    # 右下y座標
+    # 取得boxes的各角落座標
 	area = (x2 - x1 + 1) * (y2 - y1 + 1)
+    # 計算boxes的面積
 	idxs = np.argsort(y2)
-	# keep looping while some indexes still remain in the indexes
-	# list
+    # 依右下y座標排序
 	while len(idxs) > 0:
-		# grab the last index in the indexes list and add the
-		# index value to the list of picked indexes
 		last = len(idxs) - 1
 		i = idxs[last]
 		pick.append(i)
-		# find the largest (x, y) coordinates for the start of
-		# the bounding box and the smallest (x, y) coordinates
-		# for the end of the bounding box
+        # 取idxs中最後一項box的index並紀錄之
 		xx1 = np.maximum(x1[i], x1[idxs[:last]])
 		yy1 = np.maximum(y1[i], y1[idxs[:last]])
 		xx2 = np.minimum(x2[i], x2[idxs[:last]])
 		yy2 = np.minimum(y2[i], y2[idxs[:last]])
-		# compute the width and height of the bounding box
+        # 計算最後一項box與其他boxes的重疊區域之座標
 		w = np.maximum(0, xx2 - xx1 + 1)
 		h = np.maximum(0, yy2 - yy1 + 1)
-		# compute the ratio of overlap
+        # 計算重疊區域之w與h，當不重疊時w或h為0
 		overlap = (w * h) / area[idxs[:last]]
-		# delete all indexes from the index list that have
-		idxs = np.delete(idxs, np.concatenate(([last],
-			np.where(overlap > overlapThresh)[0])))
-	# return only the bounding boxes that were picked using the
-	# integer data type
+        # 計算重疊面積所佔template面積比例
+		idxs = np.delete(idxs, np.concatenate(([last],\
+			   np.where(overlap > overlapThresh)[0])))
+        # 當該box重疊面積比大於其他boxes時，刪除其index
 	return boxes[pick].astype("int")
+    # 最終輸出所剩boxes列表
 
 def _getBox(res, T_org, thrs):
     M = np.where(res>thrs, 1, 0) 
     box_i, box_j = np.where(M!=0)
+    # 找出CC最高的特徵點
+    # 並標示其座標為box中心座標
     h, w = T_org.shape
     boxes = np.vstack([box_j - w//2, box_i - h//2,\
-                box_j + w//2, box_i + h//2]).T
+                       box_j + w//2, box_i + h//2]).T
+    # 計算box左上及右下之x, y座標
     box_res = _NMS(boxes, 0.4)
+    # non-maximum suppression
     return box_res
 
 def _plotBox(I_org, box_res):
     I_box_R = cv2.cvtColor(I_org, cv2.COLOR_GRAY2BGR)
+    # 轉灰階為BGR
     for i in range(len(box_res)):
         x1, y1 = box_res[i, :2]
         x2, y2 = box_res[i, 2:]
         mid_x, mid_y = (x1 + x2) // 2, (y1 + y2) // 2
         text_X = 'X: ' + str(mid_x)
         text_Y = 'Y: ' + str(mid_y)
+        # 計算box中心座標
         cv2.rectangle(I_box_R, (x1, y1), (x2, y2), (0, 0, 255), 1)
+        # 畫出box
         cv2.putText(I_box_R, text_X, (mid_x, mid_y), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1, cv2.LINE_AA)
         cv2.putText(I_box_R, text_Y, (mid_x, mid_y+45), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1, cv2.LINE_AA)
+        # 標註box中心座標
     return I_box_R
 
+# %% Parameters
+# 高斯核
 G = np.array([[1,  4,  6,  4, 1],
               [4, 16, 24, 16, 4],
               [6, 24, 36, 24, 6],
