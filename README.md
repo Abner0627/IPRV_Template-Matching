@@ -290,7 +290,7 @@ def _getBox(res, T_org, thrs):
     # non-maximum suppression
     return box_res
 ```
-### 畫出偵測範圍
+### 畫出偵測範圍並標註中心點
 ```py
 # main.py
 I_box_R = func._plotBox(I_org, box_res)
