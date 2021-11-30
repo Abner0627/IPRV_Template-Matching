@@ -311,9 +311,11 @@ def _plotBox(I_org, box_res):
         cv2.rectangle(I_box_R, (x1, y1), (x2, y2), (0, 0, 255), 1)
         # 畫出box
         cv2.putText(I_box_R, text_X, (mid_x, mid_y), \
-                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1, cv2.LINE_AA)
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1, \
+                    cv2.LINE_AA)
         cv2.putText(I_box_R, text_Y, (mid_x, mid_y+45), \
-                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1, cv2.LINE_AA)
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1, \ 
+                    cv2.LINE_AA)
         # 標註box中心座標
     return I_box_R
 ```
