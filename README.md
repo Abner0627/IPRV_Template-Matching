@@ -53,7 +53,7 @@ CC大於該閥值才會被視作特徵點。
 ![Imgur](https://i.imgur.com/FAfc2LP.png)
 \
 處理後的影像會生成至`./result`中，並以`result-<影像名稱>-<編號>.<副檔名>`的形式命名，\
-如下示意圖：
+如下示意圖：\
 ![Imgur](https://i.imgur.com/IOzZidG.png)
 
 ## 程式碼說明
