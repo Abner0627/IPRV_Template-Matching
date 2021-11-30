@@ -41,7 +41,7 @@ Project
    所有檔案的命名規則如下：\
    欲偵測影像：`<影像名稱>-<編號>.<副檔名>`\
    template：`<影像名稱>-Template.<副檔名>`\
-   示意如下：
+   示意如下：\
    ![Imgur](https://i.imgur.com/e2ebbwe.png) 
 4. 執行主程式進行影像處理\
 `python main.py -I <影像名稱> -T <閥值>`   
