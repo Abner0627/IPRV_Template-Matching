@@ -4,21 +4,19 @@ NCKU Image Processing and Robot Vision course homework
 ## 專案目錄結構
 ```
 Project
-│   GUI.py
-│   GUI_support.py
+│   main.py
 │   func.py
 │   requirements.txt  
 │   README.md      
 │   ...    
 └───img   
-│   │   2018043072138985.jpg
+│   │   100-1.jpg
+|   |   100-2.jpg
+|   |   100-Template.jpg
 │   │   ...
 └───result   
-│   │   result_2018043072138985.jpg
-│   │   inv_result_2018043072138985.jpg
-|   |   ...
-└───npy
-|   |   src_pos_0.npy
+│   │   result-100-1.jpg
+│   │   result-100-2.jpg
 |   |   ...
 └───ipynb 
 ```
@@ -26,8 +24,8 @@ Project
 ## 前置工作
 ### 作業說明
 * 目標\
-透過影像處理的方式將圖中人臉以左右眼及鼻子之座標為準，\
-轉移至設定好的模板上 (大小為160 pixel x 190 pixel)
+透過影像處理的方式偵測圖中與提供的template相似的區塊，\
+並標註其bounding boxes及中心座標。
 
 ### 環境
 * python 3.8
@@ -39,67 +37,59 @@ Project
 
 2. 使用`pip install -r requirements.txt`安裝所需套件
 
-3. 將欲處理的影像放入`./img`中
-
-4. 執行GUI進行影像處理\
-`python GUI.py`   
-
+3. 將欲處理的影像放入`./img`中\　　
+   所有檔案的命名規則如下：\
+   欲偵測影像：`<影像名稱>-<編號>.<副檔名>`\
+   template：`<影像名稱>-Template.<副檔名>`\
+   示意如下：
+   ![Imgur](https://i.imgur.com/e2ebbwe.png) 
+4. 執行主程式進行影像處理\
+`python main.py -I <影像名稱> -T <閥值>`   
+其中`-I <影像名稱>`表示指定欲處理的影像名稱；\
+`-T <閥值>`則代表correlation coefficient (CC)的閥值，\
+CC大於該閥值才會被視作特徵點。
+\
+處理後的影像會生成至`./result`中，並以`result-<影像名稱>-<編號>.<副檔名>`的形式命名，\
+如下示意圖：
+![Imgur](https://i.imgur.com/IOzZidG.png)
 
 ## 程式碼說明
-### Image Input
+### Arguments
 ```py
-# GUI_support.py
-img_list = os.listdir('./img')
-# 取得./img中影像列表
-text_get = w.TEntry1.get()
-# 取得GUI輸入(此處為影像編號)
-fn = img_list[int(text_get)]
-# 選取影像之檔名
-img_P = os.path.join('./img', fn)
-img_org = cv2.imread(img_P)    # bgr
-# 加載影像
-img = cv2.cvtColor(img_org, cv2.COLOR_BGR2RGB)
-# 從BGR轉至RGB
-# pos
-func._Pos(img, text_get)
-# 生成影像用以供使用者標記目標點
-func._PlotPos(img, text_get)
-# 畫上選取範圍
+# main.py
+parser = argparse.ArgumentParser()
+parser.add_argument('-I','--image',
+                   default='100',
+                   help='import image type, such as 100 or Die')
+# 輸入圖片類型，範例為'100'及'Die'                   
+parser.add_argument('-T','--thrs',
+                    default=0.12,
+                    help='thrs of CC')
+# 判斷特徵點的閥值，對應'100'及'Die'之閥值分別為0.12及0.2
+args = parser.parse_args()
+```
+### 設定路徑
+```py
+# main.py
+path = './img'
+img_list, tpl_list = func._split(path, img_type=args.image)
 ```
 ```py
-def _Pos(img, idx):
-    def on_press(event):
-        L.append(np.array([int(event.xdata), int(event.ydata)]))
-        # 紀錄點選的座標點
-        if len(L)>=3: 
-            plt.close()
-            # 當點選次數大於等於3時，關閉視窗
-        np.save('./npy/src_pos_' + idx + '.npy', np.array(L))
-        # 儲存紀錄座標點
-    fig = plt.figure()
-    plt.imshow(img, animated= True)
-    L = []
-    fig.canvas.mpl_connect('button_press_event', on_press)
-    # 用動態圖的形式產生介面供使用者點選目標點
-    plt.show() 
+# func.py
+def _split(path, img_type):
+    tot_list = os.listdir(path)
+    # 取得path下所有檔案名稱
+    img_list, tpl_list = [], []
+    for j in tot_list:
+        k = j.replace('.', '-')
+        if k.split('-')[0]==img_type and k.split('-')[-2]!='MatchResult':
+            if k.split('-')[-2]=='Template':
+                tpl_list.append(j)
+                # 找出作為Template的影像
+            else:
+                img_list.append(j)
+                # 待偵測的影像
+    return img_list, tpl_list
 ```
-```py
-def _PlotPos(img, idx):
-    img_c = np.copy(img)
-    src = np.load('./npy/src_pos_' + idx + '.npy').astype(float)
-    cv2.polylines(img_c, [src.astype(int)], True, (255, 0, 0), 2)
-    # 取選取之左右眼及鼻子座標，畫出範圍於原影像上
-    plt.imshow(img_c)
-    plt.show()
-```
+## 結果展示
 
-## 轉換結果展示
-2018043072138985.jpg\
-![Imgur](https://i.imgur.com/X7ZoIl0.jpg)\
-![Imgur](https://i.imgur.com/BrWQln1.jpg)\
-tom-cruise-vanessa-kirby-mission-impossible-fallout-1564649325.bmp\
-![Imgur](https://i.imgur.com/OvLf4Xl.png)\
-![Imgur](https://i.imgur.com/rbuPHSn.png)\
-TomHanksApr09.jpg\
-![Imgur](https://i.imgur.com/7H2w2sj.jpg)\
-![Imgur](https://i.imgur.com/eSiUeAA.jpg)

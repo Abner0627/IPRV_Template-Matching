@@ -134,7 +134,8 @@ def _getBox(res, T_org, thrs):
     M = np.where(res>thrs, 1, 0) 
     box_i, box_j = np.where(M!=0)
     # 找出CC最高的特徵點
-    # 並標示其座標為box中心座標
+    # 其中CC大於thrs的像素才會被視作特徵點
+    # 最後標示其座標為box中心座標
     h, w = T_org.shape
     boxes = np.vstack([box_j - w//2, box_i - h//2,\
                        box_j + w//2, box_i + h//2]).T
