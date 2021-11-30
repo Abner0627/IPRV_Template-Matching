@@ -38,7 +38,7 @@ for Fn in img_list:
     sub_matrices = func._sub(I_pad, T)
     # 將影像I_pad切割為，與kernel大小與T相同的數個小矩陣
     CC = func._match(sub_matrices, T)
-    # Correlation Coefficient Matching
+    # Normalized Correlation Coefficient Matching
     # %%
     res = func._USP(CC, func.G/4, iter=3) 
     # Up sampling
