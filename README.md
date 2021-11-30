@@ -131,6 +131,13 @@ def _pad(X, k):
         X_ = X
     return X_
 
+# 高斯核
+G = np.array([[1,  4,  6,  4, 1],
+              [4, 16, 24, 16, 4],
+              [6, 24, 36, 24, 6],
+              [4, 16, 24, 16, 4],
+              [1,  4,  6,  4, 1]])
+
 def _DSP(X, k, iter=1):
     for i in range(iter):
         k_ = k / (k.shape[0] * k.shape[1])
@@ -224,13 +231,6 @@ def _USP(DP, k, iter=1):
         DP = np.einsum('klij,ij->kl', sub_matrices, k_)
         # 以上六行同_DSP
     return DP
-
-# 高斯核
-G = np.array([[1,  4,  6,  4, 1],
-              [4, 16, 24, 16, 4],
-              [6, 24, 36, 24, 6],
-              [4, 16, 24, 16, 4],
-              [1,  4,  6,  4, 1]])
 ```
 ### 取得特徵點的bounding boxes
 此處在得到所有特徵點的bounding boxes之後，\
