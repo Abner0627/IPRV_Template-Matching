@@ -232,7 +232,8 @@ def _USP(DP, k, iter=1):
         # 在W與H方向的奇數列pad 0
         k_ = k / (k.shape[0] * k.shape[1])
         X_pad = _pad(X, k_)
-        view_shape = tuple(np.subtract(X_pad.shape, k_.shape) + 1) + k_.shape
+        view_shape = tuple(np.subtract(X_pad.shape, k_.shape) + 1) \
+                        + k_.shape
         strides = X_pad.strides + X_pad.strides
         sub_matrices = as_strided(X_pad, view_shape, strides) 
         DP = np.einsum('klij,ij->kl', sub_matrices, k_)
@@ -300,8 +301,8 @@ def _getBox(res, T_org, thrs):
 ### 畫出偵測範圍並標註中心點
 ```py
 # main.py
-I_box_R = func._plotBox(I_org, box_res)
-# 將bounding boxes畫於原影像上，並標註其中心點座標
+I_box_R = func._plotBox(I_org, box_res, res_)
+# 將bounding boxes畫於原影像上，並標註其中心點座標及計算score
 ```
 ```py
 # func.py
@@ -349,6 +350,7 @@ print ("\n" + "It cost {:.4f} sec" .format(tEnd-tStart))
 ```
 ### 儲存box座標與cv2做比較
 ```py
+# main.py
 sPpy = './npy'
 sFpy = Fn.split('.')[0] + '_box.npy'
 np.save(os.path.join(sPpy, sFpy), box_res)
