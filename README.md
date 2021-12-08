@@ -6,6 +6,7 @@ NCKU Image Processing and Robot Vision course homework
 Project
 │   main.py
 │   func.py
+│   cv2_diff.py
 │   requirements.txt  
 │   README.md      
 │   ...    
@@ -17,6 +18,10 @@ Project
 └───result   
 │   │   result-100-1.jpg
 │   │   result-100-2.jpg
+|   |   ...
+└───npy  
+│   │   100-1_box.npy
+│   │   100-2_box.npy
 |   |   ...
 └───ipynb 
 ```
@@ -66,9 +71,8 @@ parser.add_argument('-I','--image',
                    help='import image type, such as 100 or Die')
 # 輸入圖片類型，範例為'100'及'Die'                   
 parser.add_argument('-T','--thrs',
-                    default=0.12,
+                    default=0.85,
                     help='thrs of CC')
-# 判斷特徵點的閥值，對應'100'及'Die'之閥值分別為0.12及0.2
 args = parser.parse_args()
 ```
 ### 設定路徑
@@ -215,6 +219,8 @@ def _match(sub_matrices, T):
 # main.py
 res = func._USP(CC, func.G/4, iter=3) 
 # Up sampling
+res_ = (res - np.min(res)) / (np.max(res) - np.min(res))
+# 縮放至0~1用以計算score
 ```
 ```py
 # func.py
@@ -237,7 +243,7 @@ def _USP(DP, k, iter=1):
 會再進一步將重複的boxes用non-maximum suppression去除。
 ```py
 # main.py
-box_res = func._getBox(res, T_org, float(args.thrs))
+box_res = func._getBox(res_, T_org, float(args.thrs))
 # 取得以特徵點為中心的bounding boxes
 ```
 ```py
@@ -298,25 +304,35 @@ I_box_R = func._plotBox(I_org, box_res)
 ```
 ```py
 # func.py
-def _plotBox(I_org, box_res):
+def _plotBox(I_org, box_res, res_):
     I_box_R = cv2.cvtColor(I_org, cv2.COLOR_GRAY2BGR)
     # 轉灰階為BGR
+    Lx, Ly = [], []
     for i in range(len(box_res)):
         x1, y1 = box_res[i, :2]
         x2, y2 = box_res[i, 2:]
         mid_x, mid_y = (x1 + x2) // 2, (y1 + y2) // 2
+        Lx.append(mid_x)
+        Ly.append(mid_y)
+        # 計算box中心座標
+        score = res_[mid_y, mid_x]
+        # 計算score
         text_X = 'X: ' + str(mid_x)
         text_Y = 'Y: ' + str(mid_y)
-        # 計算box中心座標
+        text_sc = 'S: ' + str(np.round(score, 2))
+        
         cv2.rectangle(I_box_R, (x1, y1), (x2, y2), (0, 0, 255), 1)
         # 畫出box
         cv2.putText(I_box_R, text_X, (mid_x, mid_y), \
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1, \
                     cv2.LINE_AA)
         cv2.putText(I_box_R, text_Y, (mid_x, mid_y+45), \
-                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1, \ 
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1, \
                     cv2.LINE_AA)
-        # 標註box中心座標
+        cv2.putText(I_box_R, text_sc, (mid_x, mid_y+90), \
+                    cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 1, \
+                    cv2.LINE_AA)
+        # 標註box中心座標以及score
     return I_box_R
 ```
 ### 設定路徑並儲存影像
@@ -330,8 +346,16 @@ tEnd = time.time()
 print ("\n" + "It cost {:.4f} sec" .format(tEnd-tStart))
 # 停止計時並print出所需時間
 ```
+### 儲存box座標與cv2做比較
+```py
+sPpy = './npy'
+sFpy = Fn.split('.')[0] + '_box.npy'
+np.save(os.path.join(sPpy, sFpy), box_res)
+```
 
 ## 偵測結果展示
+與cv2的中心座標誤差百分比計算如下：
+(詳見`cv2_diff.py`)
 ### 100
 ![Imgur](https://i.imgur.com/AbMkMP3.jpg)\
 ![Imgur](https://i.imgur.com/Q7Amx5e.jpg)\

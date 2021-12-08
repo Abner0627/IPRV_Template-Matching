@@ -44,3 +44,4 @@ def _mid(HD_box):
 HD_X, HD_Y = _mid(HD_box)
 CV_X, CV_Y = _mid(CV_box)
 DIFF_X, DIFF_Y = np.abs(HD_X-CV_X), np.abs(HD_Y-CV_Y)
+DIFF_X_per, DIFF_Y_per = DIFF_X/img_gray.shape[0], DIFF_Y/img_gray.shape[1]

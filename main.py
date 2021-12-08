@@ -16,7 +16,6 @@ parser.add_argument('-I','--image',
 parser.add_argument('-T','--thrs',
                     default=0.85,
                     help='thrs of CC')
-# 判斷特徵點的閥值，對應'100'及'Die'之閥值分別為0.12及0.2
 args = parser.parse_args()
 # %%
 path = './img'
@@ -46,7 +45,7 @@ for Fn in img_list:
     # Up sampling
     res_ = (res - np.min(res)) / (np.max(res) - np.min(res))
     # 縮放至0~1用以計算score
-    box_res = func._getBox(res_, T_org, args.thrs)
+    box_res = func._getBox(res_, T_org, float(args.thrs))
     # 取得以特徵點為中心的bounding boxes
     I_box_R = func._plotBox(I_org, box_res, res_)
     # 將bounding boxes畫於原影像上，並標註其中心點座標

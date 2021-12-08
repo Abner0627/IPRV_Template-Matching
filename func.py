@@ -169,11 +169,6 @@ def _plotBox(I_org, box_res, res_):
         # 標註box中心座標以及score
     return I_box_R
 
-def _cv2Compare(I_org, T_org):
-    res = cv2.matchTemplate(I_org, T_org, cv2.TM_CCORR_NORMED)
-    threshold = 0.85
-    loc = np.where( res >= threshold)
-    return loc
 # %% Parameters
 # 高斯核
 G = np.array([[1,  4,  6,  4, 1],
