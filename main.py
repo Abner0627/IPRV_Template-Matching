@@ -5,7 +5,6 @@ import argparse
 import time
 import func
 import numpy as np
-import matplotlib.pyplot as plt
 
 # %% args
 parser = argparse.ArgumentParser()

@@ -30,7 +30,7 @@ Project
 ### 作業說明
 * 目標\
 透過影像處理的方式偵測圖中與提供的template相似的區塊，\
-並標註其bounding boxes及中心座標。
+並標註其bounding boxes、中心座標，以及中心座標之matching的相似程度。
 
 ### 環境
 * python 3.8
@@ -47,19 +47,20 @@ Project
    欲偵測影像：`<影像名稱>-<編號>.<副檔名>`\
    template：`<影像名稱>-Template.<副檔名>`\
    示意如下：\
-   ![Imgur](https://i.imgur.com/e2ebbwe.png) 
+   ![Imgur](https://i.imgur.com/xbJBhrY.png) 
 4. 執行主程式進行影像處理\
 `python main.py -I <影像名稱> -T <閥值>`   
 其中`-I <影像名稱>`表示指定欲處理的影像名稱；\
 `-T <閥值>`則代表correlation coefficient (CC)的閥值，\
-CC大於該閥值才會被視作特徵點。
+CC大於該閥值才會被視作特徵點。\
+預設為0.85。
 \
 程式跑完之後會在terminal上分別顯示每張影像花費的時間，如下：
-![Imgur](https://i.imgur.com/FAfc2LP.png)
+![Imgur](https://i.imgur.com/titfDi0.png)
 \
 處理後的影像會生成至`./result`中，並以`result-<影像名稱>-<編號>.<副檔名>`的形式命名，\
 如下示意圖：\
-![Imgur](https://i.imgur.com/IOzZidG.png)
+![Imgur](https://i.imgur.com/QBRve3T.png)
 
 ## 程式碼說明
 ### Arguments
@@ -357,16 +358,16 @@ np.save(os.path.join(sPpy, sFpy), box_res)
 與cv2的中心座標誤差百分比計算如下：
 (詳見`cv2_diff.py`)
 ### 100
-![Imgur](https://i.imgur.com/AbMkMP3.jpg)\
-![Imgur](https://i.imgur.com/Q7Amx5e.jpg)\
-![Imgur](https://i.imgur.com/t33QD7I.jpg)\
-![Imgur](https://i.imgur.com/EmD4q34.jpg)
+![Imgur](https://i.imgur.com/PT6jids.jpg)\
+![Imgur](https://i.imgur.com/uL7cmuC.jpg)\
+![Imgur](https://i.imgur.com/tqEgfIF.jpg)\
+![Imgur](https://i.imgur.com/WhQ9Fh2.jpg)
 #### 花費時間 (依上圖順序)
-![Imgur](https://i.imgur.com/nbeAU9j.png)
+![Imgur](https://i.imgur.com/YdqiEXP.png)
 
 ### Die
-![Imgur](https://i.imgur.com/wcvxeal.png)\
-![Imgur](https://i.imgur.com/f0O98kg.png)
+![Imgur](https://i.imgur.com/2KQVcKl.png)\
+![Imgur](https://i.imgur.com/jUVNLC2.png)
 #### 花費時間 (依上圖順序)
-![Imgur](https://i.imgur.com/vwZMPrY.png)
+![Imgur](https://i.imgur.com/MegWgm3.png)
 
