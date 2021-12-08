@@ -4,6 +4,8 @@ import os
 import argparse
 import time
 import func
+import numpy as np
+import matplotlib.pyplot as plt
 
 # %% args
 parser = argparse.ArgumentParser()
@@ -12,7 +14,7 @@ parser.add_argument('-I','--image',
                    help='import image type, such as 100 or Die')
 # 輸入圖片類型，範例為'100'及'Die'                   
 parser.add_argument('-T','--thrs',
-                    default=0.12,
+                    default=0.85,
                     help='thrs of CC')
 # 判斷特徵點的閥值，對應'100'及'Die'之閥值分別為0.12及0.2
 args = parser.parse_args()
@@ -42,13 +44,11 @@ for Fn in img_list:
     # %%
     res = func._USP(CC, func.G/4, iter=3) 
     # Up sampling
-    '''
-    Die 0.2
-    100 0.12     
-    '''
-    box_res = func._getBox(res, T_org, float(args.thrs))
+    res_ = (res - np.min(res)) / (np.max(res) - np.min(res))
+    # 縮放至0~1用以計算score
+    box_res = func._getBox(res_, T_org, args.thrs)
     # 取得以特徵點為中心的bounding boxes
-    I_box_R = func._plotBox(I_org, box_res)
+    I_box_R = func._plotBox(I_org, box_res, res_)
     # 將bounding boxes畫於原影像上，並標註其中心點座標
     # %%
     sFn = 'result-' + Fn
@@ -58,3 +58,8 @@ for Fn in img_list:
     tEnd = time.time()
     print ("\n" + "It cost {:.4f} sec" .format(tEnd-tStart))
     # 停止計時並print出所需時間
+    
+    # %%
+    sPpy = './npy'
+    sFpy = Fn.split('.')[0] + '_box.npy'
+    np.save(os.path.join(sPpy, sFpy), box_res)
