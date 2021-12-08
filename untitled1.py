@@ -1,9 +1,7 @@
 import cv2 as cv
 import numpy as np
-from matplotlib import pyplot as plt
 import func
 import os
-
 
 # %%
 path = './img'
@@ -25,11 +23,24 @@ for pt in zip(*loc[::-1]):
                        pt[0] + w//2, pt[1] + h//2]).T
     L.append(boxes)    
 L = np.vstack(L)
-box = func._NMS(L, 0.4)
+CV_box = func._NMS(L, 0.4)
 
 # %%
 sPpy = './npy'
 sFpy = Fn.split('.')[0] + '_box.npy'
 HD_box = np.load(os.path.join(sPpy, sFpy))
 
-plt.imshow(img_rgb)
+# %%
+def _mid(HD_box):
+    MX, MY = [], []
+    for i in range(len(HD_box)):
+        x1, y1 = HD_box[i, :2]
+        x2, y2 = HD_box[i, 2:]
+        mid_x, mid_y = (x1 + x2) // 2, (y1 + y2) // 2
+        MX.append(mid_x)
+        MY.append(mid_y)
+    return np.vstack(MX), np.vstack(MY)
+
+HD_X, HD_Y = _mid(HD_box)
+CV_X, CV_Y = _mid(CV_box)
+DIFF_X, DIFF_Y = np.abs(HD_X-CV_X), np.abs(HD_Y-CV_Y)
