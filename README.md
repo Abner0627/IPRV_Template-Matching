@@ -357,7 +357,8 @@ np.save(os.path.join(sPpy, sFpy), box_res)
 ```
 
 ## 偵測結果展示
-與cv2的中心座標誤差百分比計算如下：
+與cv2的box中心座標的誤差表示如下：\
+![Imgur](https://i.imgur.com/R6IVx9s.png)\
 (詳見`cv2_diff.py`)
 ### 100
 ![Imgur](https://i.imgur.com/PT6jids.jpg)\
