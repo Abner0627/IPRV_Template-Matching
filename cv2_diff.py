@@ -5,8 +5,8 @@ import os
 
 # %%
 path = './img'
-Fn = '100-4.jpg'
-Tn = '100-Template.jpg'
+Fn = 'Die-2.tif'
+Tn = 'Die-Template.tif'
 # %%
 img_rgb = cv.imread(os.path.join(path, Fn))
 img_gray = cv.cvtColor(img_rgb, cv.COLOR_BGR2GRAY)

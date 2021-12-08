@@ -362,15 +362,21 @@ np.save(os.path.join(sPpy, sFpy), box_res)
 (詳見`cv2_diff.py`)
 ### 100
 ![Imgur](https://i.imgur.com/PT6jids.jpg)\
+誤差：[(87, 126)], [(86, 127)]\
 ![Imgur](https://i.imgur.com/uL7cmuC.jpg)\
+誤差：[(88, 126)], [(82, 128)]\
 ![Imgur](https://i.imgur.com/tqEgfIF.jpg)\
+誤差：[(87, 127)], [(85, 127)]\
 ![Imgur](https://i.imgur.com/WhQ9Fh2.jpg)
+誤差：[(87, 128)], [(85, 130)]
 #### 花費時間 (依上圖順序)
 ![Imgur](https://i.imgur.com/YdqiEXP.png)
 
 ### Die
 ![Imgur](https://i.imgur.com/2KQVcKl.png)\
-![Imgur](https://i.imgur.com/jUVNLC2.png)
+誤差：[(75, 124)], [(71, 138)], [(73, 138)]\
+![Imgur](https://i.imgur.com/jUVNLC2.png)\
+誤差：[(76, 23)], [(72, 143)], [(202, 143)]
 #### 花費時間 (依上圖順序)
 ![Imgur](https://i.imgur.com/MegWgm3.png)
 
